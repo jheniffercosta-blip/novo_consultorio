@@ -1,26 +1,29 @@
 <?php
-
 namespace App;
-
 use PDO;
-
-class Paciente extends Pessoa
-{
-    public $id;
+class Paciente extends Pessoa{
     public $convenio;
     public $observacao;
-    public $criado_em;
-    public $atualizado_em;
-
-    // Cadastrar paciente
-    public function cadastrar()
-    {
+    public function cadastrar(){
         $db = new DataBase('paciente');
-
-        return $db->insert([
+        $this->id = $db->insert([
             'nome' => $this->nome,
-            'cpf' => $this->cpf,
-            'data_nascimento' => $this->data_nascimento,
+            'cpf'  => $this->cpf,
+            'data_nascimento' =>$this->data_nascimento,
+            'telefone' => $this->telefone,
+            'email' => $this->email,
+            'endereco' => $this->endereco,
+            'convenio' => $this->convenio,
+            'observacao' => $this->observacao
+        ]);    
+        
+
+    }
+    public function alterar(){
+        return (new DataBase('paciente'))->update('id = '.$this->id, [
+            'nome' => $this->nome,
+            'cpf'  => $this->cpf,
+            'data_nascimento' =>$this->data_nascimento,
             'telefone' => $this->telefone,
             'email' => $this->email,
             'endereco' => $this->endereco,
@@ -28,64 +31,13 @@ class Paciente extends Pessoa
             'observacao' => $this->observacao
         ]);
     }
-
-    // Alterar paciente
-    public function alterar()
-    {
-        $db = new DataBase('paciente');
-
-        return $db->update('id = ' . (int) $this->id, [
-            'nome' => $this->nome,
-            'cpf' => $this->cpf,
-            'data_nascimento' => $this->data_nascimento,
-            'telefone' => $this->telefone,
-            'email' => $this->email,
-            'endereco' => $this->endereco,
-            'convenio' => $this->convenio,
-            'observacao' => $this->observacao
-        ]);
+    public function excluir(){
+        return (new DataBase('paciente'))->delete('id = '.$this->id);
     }
-
-    // Deletar paciente
-    public function delete()
-    {
-        $db = new DataBase('paciente');
-
-        return $db->delete('id = ' . (int) $this->id);
+    public static function listar($where = null, $order = null, $limit = null, $fields = '*'){
+        return (new DataBase('paciente'))->select($where, $order, $limit, $fields)->fetchAll(PDO::FETCH_CLASS, self::class);
     }
-
-    // Listar pacientes
-    public static function listar()
-    {
-        $db = new DataBase('paciente');
-
-        $resultado = $db->execute(
-            "SELECT * FROM paciente ORDER BY nome ASC"
-        );
-
-        $dados = $resultado->fetchAll(PDO::FETCH_ASSOC);
-
-        $pacientes = [];
-
-        foreach ($dados as $dado) {
-            $paciente = new self();
-
-            $paciente->id = $dado['id'];
-            $paciente->nome = $dado['nome'];
-            $paciente->cpf = $dado['cpf'];
-            $paciente->data_nascimento = $dado['data_nascimento'];
-            $paciente->telefone = $dado['telefone'];
-            $paciente->email = $dado['email'];
-            $paciente->endereco = $dado['endereco'];
-            $paciente->convenio = $dado['convenio'];
-            $paciente->observacao = $dado['observacao'];
-
-            $paciente->criado_em = $dado['criado_em'] ?? null;
-            $paciente->atualizado_em = $dado['atualizado_em'] ?? null;
-
-            $pacientes[] = $paciente;
-        }
-
-        return $pacientes;
+    public static function buscarPorId($id){
+        return (new DataBase('paciente'))->select('id ='.$id)->fetchObject(self::class);
     }
 }

@@ -15,13 +15,25 @@ switch($action){
         $paciente->observacao = $_POST['observacao'];
         $paciente->cadastrar();
         
-        //header('location: /consultorio/view/paciente/listar.php');
+        header('location: /consultorio/view/paciente/listar.php');
     break;
     case 'alterar':
-        
+        $paciente = Paciente::buscarPorId($_GET['id']);
+        $paciente->nome = $_POST['nome'];
+        $paciente->cpf = $_POST['cpf'];
+        $paciente->data_nascimento = $_POST['data_nascimento'];
+        $paciente->telefone = $_POST['telefone'];
+        $paciente->email = $_POST['email'];
+        $paciente->endereco = $_POST['endereco'];
+        $paciente->convenio = $_POST['convenio'];
+        $paciente->observacao = $_POST['observacao'];
+        $paciente->alterar();
+        header('location: /consultorio/view/paciente/listar.php');
     break;
     case 'excluir':
-
+        $paciente->id = $_GET['id'];
+        $paciente->excluir();
+        header('location: /consultorio/view/paciente/listar.php');
     break;
 }
 ?>
