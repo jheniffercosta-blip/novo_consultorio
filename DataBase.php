@@ -1,101 +1,61 @@
 <?php
-
 namespace App;
-
 use PDO;
 use PDOException;
-
-class DataBase
-{
+class DataBase{
     const HOST = 'localhost';
     const USER = 'root';
     const PASSWORD = '123';
     const DBNAME = 'consultorio';
-
     private $connection;
     private $table;
-
-    public function __construct($table = null)
-    {
+    
+    public function __construct($table = null){
         $this->setConnection();
         $this->table = $table;
     }
-
-    private function setConnection()
-    {
-        try {
-            $this->connection = new PDO(
-                'mysql:host=' . self::HOST .
-                ';dbname=' . self::DBNAME .
-                ';charset=utf8mb4',
-                self::USER,
-                self::PASSWORD
-            );
-
-            $this->connection->setAttribute(
-                PDO::ATTR_ERRMODE,
-                PDO::ERRMODE_EXCEPTION
-            );
-
-        } catch (PDOException $e) {
-            die('Erro ao conectar ao banco: ' . $e->getMessage());
-        }
+    private function setConnection(){
+        $this->connection = new PDO
+        ('mysql:host='.self::HOST.';dbname='.self::DBNAME,self::USER,self::PASSWORD);
+        $this->connection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     }
-
-    public function execute($query, $values = null)
-    {
-        try {
+    public function execute($query, $values = null){
+        try{
+            echo "<pre>";
+            print_r($query);
+            echo "</pre>";
             $statement = $this->connection->prepare($query);
-            $statement->execute($values ?? []);
-
+            $statement->execute($values);
             return $statement;
-
-        } catch (PDOException $e) {
-            die('Erro ao executar consulta: ' . $e->getMessage());
+        }catch(PDOException $e){
+            die('ERROR: '.$e->getMessage());
         }
     }
-
-    public function insert($array)
-    {
+    public function insert($array){
         $fields = array_keys($array);
-        $binds = array_fill(0, count($array), '?');
-
-        $query = 'INSERT INTO ' . $this->table .
-            ' (' . implode(', ', $fields) . ')' .
-            ' VALUES (' . implode(', ', $binds) . ')';
-
+        $binds = array_pad([],count($array),'?');
+        $query = 'insert into '.$this->table.'('.implode(', ',$fields).')
+         values('.implode(', ',$binds).')';
         $this->execute($query, array_values($array));
-
         return $this->connection->lastInsertId();
+        
     }
-
-    public function select($where = null , $order = null, $limit = null)
-    {
-         $where = strlen($where) ? 'where'.$where : '';
-         $where = strlen($where) ? 'order by'.$order : '';
-         $where = strlen($where) ? 'limit'.$limit : '';
-
-        $query = 'SELECT * FROM ' . $this->table;
-
+    public function select($where = null, $order = null, $limit = null, $fields = '*'){
+        $where = strlen($where) ? ' where '.$where : '';
+        $order = strlen($order) ? ' order by '.$order : '';
+        $limit = strlen($limit) ? ' limit '.$limit : '';
+        $query = 'select '.$fields.' from '.$this->table . $where . $order .$limit;
         return $this->execute($query);
     }
-
-    public function update ($array, $where)
-    {
+    public function update($where, $array){
         $fields = array_keys($array);
-        $binds = array_pad([],count($array),' = ?,');
-        $querry = 'update'.$this->table.'set'.implode($binds,$fields) .' =?  where'.$where;
-        return $this->execute($querry,array_values($array));
-
+        $query = 'update '.$this->table.' set '.implode('= ?, ',$fields).'=? where '.$where;
+        return $this->execute($query,array_values($array));
     }
- 
-     public function excluir($where)
-     {
-       $querry = 'DELETE FROM '.$this->table.'where'.$where;
-       return $this->execute($querry);
-         
-     }
-
-
+    public function delete($where){
+        $query = 'delete from '.$this->table.' where '.$where;
+        return $this->execute($query);
+    }
+    
 
 }
